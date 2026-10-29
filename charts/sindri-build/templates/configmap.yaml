@@ -52,11 +52,13 @@ data:
                   drop: [ALL]
       # Jobs on the `sindri` label build the image: rootless BuildKit as uid 1000 with exactly what the build spike
       # needed (clockmost-kubernetes.md step 2c) - SELinux container_engine_t, the meru/build.json seccomp profile
-      # (installed on every node), SETUID/SETGID for newuidmap - plus Zot push rights and the signing key. Only
-      # these jobs see them.
+      # (installed on every node), SETUID/SETGID for newuidmap. They run as `signer` with a 10-minute token meant only
+      # for OpenBao, which they trade for the app's Zot login and signing key, kept in memory (/keys). Only these
+      # jobs get that token.
       pod_templates:
         sindri:
           spec:
+            serviceAccountName: signer
             securityContext:
               seLinuxOptions:
                 type: container_engine_t
@@ -69,7 +71,17 @@ data:
                   - name: BUILDKITD_FLAGS
                     value: --oci-worker-no-process-sandbox
                   - name: DOCKER_CONFIG # buildctl + cosign log in to zot.clockmost.com as <app>-builder
-                    value: /secrets/zot
+                    value: /keys/zot
+                  - name: BAO_ADDR
+                    value: {{ .Values.openbao.addr }}
+                  - name: BAO_CACERT
+                    value: /etc/openbao/ca.pem
+                  - name: BAO_ROLE
+                    value: meru-{{ .Values.app }}-build
+                  - name: BAO_KEYS_PATH # KV v2 under the apps mount
+                    value: apps/data/meru/{{ .Values.app }}/build
+                  - name: BAO_JWT_FILE
+                    value: /var/run/secrets/openbao/token
                 resources:
                   limits:
                     memory: {{ .Values.buildMemoryLimit }}
@@ -79,17 +91,38 @@ data:
                     drop: [ALL]
                     add: [SETUID, SETGID]
                 volumeMounts:
-                  - name: zot-login
-                    mountPath: /secrets/zot
+                  - name: openbao-token
+                    mountPath: /var/run/secrets/openbao
                     readOnly: true
-                  - name: cosign
-                    mountPath: /secrets/cosign
+                  - name: openbao-ca
+                    mountPath: /etc/openbao
                     readOnly: true
-            # Made per app by hand for now; from OpenBao next (D61).
+                  - name: keys
+                    mountPath: /keys
             volumes:
-              - name: zot-login
-                secret:
-                  secretName: {{ .Values.app }}-builder-zot # config.json: push rights on meru/<app> only
-              - name: cosign
-                secret:
-                  secretName: {{ .Values.app }}-cosign # cosign.key + password (D31)
+              - name: openbao-token
+                projected:
+                  sources:
+                    - serviceAccountToken:
+                        audience: openbao
+                        expirationSeconds: 600
+                        path: token
+              - name: openbao-ca
+                configMap:
+                  name: openbao-ca
+              - name: keys
+                emptyDir:
+                  medium: Memory
+                  sizeLimit: 1Mi
+---
+# OpenBao's CA, for the `sindri` jobs' key fetch.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openbao-ca
+  namespace: {{ include "sindri-build.namespace" . }}
+  labels:
+    {{- include "sindri-build.labels" . | nindent 4 }}
+data:
+  ca.pem: |
+    {{- .Values.openbao.caCert | nindent 4 }}

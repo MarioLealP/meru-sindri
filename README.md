@@ -12,7 +12,8 @@ What the chart builds for an app `<app>`:
   pods in its own namespace and nothing else
 - job pods that start with nothing: a plain user, no capabilities, no service account token, no credentials
 - for jobs on the `sindri` label only: rootless BuildKit (SELinux `container_engine_t`, a seccomp profile with user
-  namespaces, `SETUID`/`SETGID` for `newuidmap`), the app's push login for the registry and its signing key
+  namespaces, `SETUID`/`SETGID` for `newuidmap`), and a 10-minute token of the `signer` account that only OpenBao
+  accepts - the job trades it for the app's registry login and signing key, kept in memory
 - Meru's CMDB labels on every resource and pod
 
 ## Usage
@@ -33,8 +34,19 @@ labels:
 
 `charts/sindri-build/values.yaml` documents each option and `charts/sindri-build/values.schema.json` rejects unknown
 keys. In Meru, Argo CD renders the chart for each app; nothing runs `helm install`. Per app, three credentials are made
-outside the chart: the runner's registration token (`sindri-registration`), the registry login (`<app>-builder-zot`)
-and the signing key (`<app>-cosign`).
+outside the chart: the runner's registration token (`sindri-registration`), and in OpenBao (`apps/meru/<app>/build`,
+login role `meru-<app>-build`) the registry login and the signing key.
+
+A build step fetches the keys with the build image's busybox `wget` (the values are base64, so `sed` can take them
+out of the JSON):
+
+```sh
+login=$(printf '{"role":"%s","jwt":"%s"}' "$BAO_ROLE" "$(cat "$BAO_JWT_FILE")")
+token=$(SSL_CERT_FILE=$BAO_CACERT wget -q -O- --post-data "$login" "$BAO_ADDR/v1/auth/kubernetes/login" |
+  sed -n 's/.*"client_token":"\([^"]*\)".*/\1/p')
+keys=$(SSL_CERT_FILE=$BAO_CACERT wget -q -O- --header "X-Vault-Token: $token" "$BAO_ADDR/v1/$BAO_KEYS_PATH")
+field() { printf '%s' "$keys" | sed -n "s/.*\"$1\":\"\([^\"]*\)\".*/\1/p" | base64 -d; }
+```
 
 ## Development
 
