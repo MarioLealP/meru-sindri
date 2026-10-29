@@ -1,0 +1,31 @@
+# The app this build namespace serves. The namespace is <app>-build; the runner registers to Meru/<app> only (its
+# registration token, Secret `sindri-registration`, is made per app by meru-app-creds).
+app: ""
+# Owner label (Meru's CMDB, compliance rule 7).
+owner: ""
+
+runner:
+  image: docker.io/gitea/runner:5.2.4@sha256:e8b3c7a5ed435fec38d1faf730cb784606cdd1c02e8543b6b96525b53281e60a
+  timeout: 1h # one job's limit; the runner's grace period follows it
+
+# Runner labels -> the image each job runs in. `sindri` is required: rootless BuildKit, the only label whose jobs get
+# the build settings and the push + signing credentials. Add `sindri-check` (or others) for jobs that run the
+# PR's code - tests, linters - with nothing to steal.
+labels:
+  sindri: docker.io/moby/buildkit@sha256:f68752a5a94acfcdad2d07867b7075601a421638e17fc5f28efc1c814d0c4f89 # v0.34.1-rootless
+
+# Every job pod's container ("job") and a job's service containers ($services).
+jobResources:
+  requests:
+    cpu: 500m
+    memory: 512Mi
+  limits:
+    memory: 2Gi
+serviceResources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    memory: 512Mi
+# A build job's memory limit (BuildKit).
+buildMemoryLimit: 4Gi

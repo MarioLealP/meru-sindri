@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sindri
+  namespace: {{ include "sindri-build.namespace" . }}
+  labels:
+    app.kubernetes.io/name: sindri
+    {{- include "sindri-build.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate # one registration, one runner
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: sindri
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: sindri
+        {{- include "sindri-build.meruLabels" . | nindent 8 }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+    spec:
+      serviceAccountName: sindri
+      terminationGracePeriodSeconds: 3700 # lets a running job (up to the 1h timeout) finish
+      # The runner itself meets "restricted"; only its job pods need the namespace's baseline.
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: runner
+          image: {{ .Values.runner.image }}
+          env:
+            - name: CONFIG_FILE
+              value: /config/config.yaml
+            - name: GITEA_INSTANCE_URL
+              value: https://git.clockmost.com # the LAN via cluster DNS
+            - name: GITEA_RUNNER_NAME
+              value: sindri-{{ .Values.app }}
+            - name: GITEA_RUNNER_LABELS
+              value: {{ include "sindri-build.runnerLabels" . | quote }}
+            - name: GITEA_RUNNER_REGISTRATION_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: sindri-registration # a Gitea runner token scoped to Meru/<app>
+                  key: token
+          ports:
+            - name: metrics
+              containerPort: 9101
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: metrics
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: metrics
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: data
+              mountPath: /data
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: config
+          configMap:
+            name: sindri-config
+        - name: data
+          persistentVolumeClaim:
+            claimName: sindri-data
+        - name: tmp
+          emptyDir:
+            sizeLimit: 64Mi

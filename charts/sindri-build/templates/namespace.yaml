@@ -1,0 +1,10 @@
+# The job pods run rootless BuildKit and need "baseline" (plus Meru/kyverno's per-app exception); the runner itself
+# meets "restricted", and "warn: restricted" shows what only the build pods are allowed.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ include "sindri-build.namespace" . }}
+  labels:
+    pod-security.kubernetes.io/enforce: baseline
+    pod-security.kubernetes.io/warn: restricted
+    {{- include "sindri-build.labels" . | nindent 4 }}

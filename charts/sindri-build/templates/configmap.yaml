@@ -1,0 +1,95 @@
+# gitea/runner config (example: internal/pkg/config/config.example.yaml of the pinned release).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sindri-config
+  namespace: {{ include "sindri-build.namespace" . }}
+  labels:
+    {{- include "sindri-build.labels" . | nindent 4 }}
+data:
+  config.yaml: |
+    log:
+      level: info
+    runner:
+      file: /data/.runner
+      capacity: 1 # one job at a time
+      timeout: {{ .Values.runner.timeout }}
+    cache:
+      enabled: false # actions/cache server; our jobs don't use it (and it wanted a writable /.cache)
+    metrics:
+      enabled: true
+      addr: ":9101" # /healthz + /readyz for the probes; /metrics, no secrets
+    kubernetes:
+      # Every job pod starts "restricted": a plain user, no capabilities, no service account token, no credentials.
+      # That's all a job on any label but `sindri` gets (tests and checks run the PR's code - nothing to steal).
+      # A $services container is merged with the same.
+      pod_template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: {{ .Values.app }}-build-job
+            {{- include "sindri-build.meruLabels" . | nindent 12 }}
+        spec:
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: job
+              resources:
+                {{- toYaml .Values.jobResources | nindent 16 }}
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: [ALL]
+            - name: $services
+              resources:
+                {{- toYaml .Values.serviceResources | nindent 16 }}
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: [ALL]
+      # Jobs on the `sindri` label build the image: rootless BuildKit as uid 1000 with exactly what the build spike
+      # needed (clockmost-kubernetes.md step 2c) - SELinux container_engine_t, the meru/build.json seccomp profile
+      # (installed on every node), SETUID/SETGID for newuidmap - plus Zot push rights and the signing key. Only
+      # these jobs see them.
+      pod_templates:
+        sindri:
+          spec:
+            securityContext:
+              seLinuxOptions:
+                type: container_engine_t
+              seccompProfile:
+                type: Localhost
+                localhostProfile: meru/build.json
+            containers:
+              - name: job
+                env:
+                  - name: BUILDKITD_FLAGS
+                    value: --oci-worker-no-process-sandbox
+                  - name: DOCKER_CONFIG # buildctl + cosign log in to zot.clockmost.com as <app>-builder
+                    value: /secrets/zot
+                resources:
+                  limits:
+                    memory: {{ .Values.buildMemoryLimit }}
+                securityContext:
+                  allowPrivilegeEscalation: true # newuidmap/newgidmap are setuid
+                  capabilities:
+                    drop: [ALL]
+                    add: [SETUID, SETGID]
+                volumeMounts:
+                  - name: zot-login
+                    mountPath: /secrets/zot
+                    readOnly: true
+                  - name: cosign
+                    mountPath: /secrets/cosign
+                    readOnly: true
+            # Made per app by hand for now; from OpenBao next (D61).
+            volumes:
+              - name: zot-login
+                secret:
+                  secretName: {{ .Values.app }}-builder-zot # config.json: push rights on meru/<app> only
+              - name: cosign
+                secret:
+                  secretName: {{ .Values.app }}-cosign # cosign.key + password (D31)

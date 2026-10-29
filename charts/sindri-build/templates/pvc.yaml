@@ -1,0 +1,14 @@
+# The runner's registration (/data/.runner); without it every restart would register a new runner in Gitea.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sindri-data
+  namespace: {{ include "sindri-build.namespace" . }}
+  labels:
+    {{- include "sindri-build.labels" . | nindent 4 }}
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: local
+  resources:
+    requests:
+      storage: 64Mi

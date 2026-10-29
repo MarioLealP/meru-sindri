@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "sindri-build values",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["app", "owner", "runner", "labels"],
+  "properties": {
+    "app": {
+      "description": "The app's name (the Meru/<app> repo); the namespace is <app>-build.",
+      "type": "string",
+      "pattern": "^[a-z]([-a-z0-9]{0,40}[a-z0-9])?$"
+    },
+    "owner": { "type": "string", "pattern": "^[a-z0-9]([-a-z0-9_.]{0,61}[a-z0-9])?$" },
+    "runner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["image"],
+      "properties": {
+        "image": { "$ref": "#/definitions/image" },
+        "timeout": { "type": "string", "pattern": "^[0-9]+(s|m|h)$" }
+      }
+    },
+    "labels": {
+      "description": "Runner label -> job image. `sindri` (the build) is required.",
+      "type": "object",
+      "required": ["sindri"],
+      "propertyNames": { "pattern": "^[a-z][-a-z0-9]{0,30}$" },
+      "additionalProperties": { "$ref": "#/definitions/image" }
+    },
+    "jobResources": { "$ref": "#/definitions/resources" },
+    "serviceResources": { "$ref": "#/definitions/resources" },
+    "buildMemoryLimit": { "type": "string" },
+    "global": { "type": "object" }
+  },
+  "definitions": {
+    "image": {
+      "description": "A fully qualified image pinned by digest.",
+      "type": "string",
+      "pattern": "^[a-z0-9.-]+(:[0-9]+)?(/[a-z0-9._-]+)+(:[A-Za-z0-9_][A-Za-z0-9_.-]{0,127})?@sha256:[a-f0-9]{64}$"
+    },
+    "resources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requests", "limits"],
+      "properties": {
+        "requests": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["cpu", "memory"],
+          "properties": {
+            "cpu": { "type": ["string", "number"] },
+            "memory": { "type": "string" }
+          }
+        },
+        "limits": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["memory"],
+          "properties": {
+            "cpu": { "type": ["string", "number"] },
+            "memory": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,5 @@
+# Thoth: the build plus a check label for tests and contract checks (uv 0.13.6-python3.15-trixie).
+app: thoth
+owner: mario
+labels:
+  sindri-check: ghcr.io/astral-sh/uv@sha256:f68dfb3eaf23a53afb5f74833bdacc0ce586d69f8063c48f9f3ebbe42e048e4a
