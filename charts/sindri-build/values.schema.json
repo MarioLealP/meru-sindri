@@ -3,7 +3,7 @@
   "title": "sindri-build values",
   "type": "object",
   "additionalProperties": false,
-  "required": ["app", "owner", "runner", "labels"],
+  "required": ["app", "owner", "runner", "labels", "openbao"],
   "properties": {
     "app": {
       "description": "The app's name (the Meru/<app> repo); the namespace is <app>-build.",
@@ -30,6 +30,15 @@
     "jobResources": { "$ref": "#/definitions/resources" },
     "serviceResources": { "$ref": "#/definitions/resources" },
     "buildMemoryLimit": { "type": "string" },
+    "openbao": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["addr", "caCert"],
+      "properties": {
+        "addr": { "type": "string", "pattern": "^https://" },
+        "caCert": { "type": "string", "pattern": "-----BEGIN CERTIFICATE-----" }
+      }
+    },
     "global": { "type": "object" }
   },
   "definitions": {

@@ -29,3 +29,23 @@ serviceResources:
     memory: 512Mi
 # A build job's memory limit (BuildKit).
 buildMemoryLimit: 4Gi
+
+# Where `sindri` jobs fetch the app's build keys (Zot login + signing key): OpenBao's Kubernetes login, role
+# meru-<app>-build, keys at apps/meru/<app>/build. A job gets a 10-minute token for the `signer` account, usable
+# only with OpenBao (audience), and an in-memory /keys for what it fetches.
+openbao:
+  addr: https://openbao.clockmost.internal:8204
+  # The clockmost root CA (public): OpenBao's certificate chains to it.
+  caCert: |
+    -----BEGIN CERTIFICATE-----
+    MIIBuDCCAT+gAwIBAgIUdhEX2D6QMvASBtSG0Umvg6/82bUwCgYIKoZIzj0EAwMw
+    HDEaMBgGA1UEAwwRY2xvY2ttb3N0IHJvb3QgQ0EwHhcNMjYxMDA2MTU1MjI0WhcN
+    MzYxMDAzMTU1MjI0WjAcMRowGAYDVQQDDBFjbG9ja21vc3Qgcm9vdCBDQTB2MBAG
+    ByqGSM49AgEGBSuBBAAiA2IABN2sR4GnlMH7p+qg3gcNQdsrIyOCzDJPfpkD4H/q
+    weqXGlXsiibzoiaX3855xGxNBF1nH9vVFjhNzPtvfDjhRgVsMsmTl4poKH0P1NSr
+    aLWd9L0vl4hwRY+i5UDbPWem5aNCMEAwDwYDVR0TAQH/BAUwAwEB/zAOBgNVHQ8B
+    Af8EBAMCAQYwHQYDVR0OBBYEFMUwLEQ5E7i14+RsAQu6ySK4zFxUMAoGCCqGSM49
+    BAMDA2cAMGQCMCfjfJs7vE8EO+vCmTw2l4QFYuv1TH1YUjFwedPpvjkTxe1jgYVV
+    EEmyXqPSoqB3mgIwMiP0/1G6XFRxMT+hHj16+uOjv6l3nqPuUWomsOQakPF5i51U
+    AwqvzZjfzlr4WU9o
+    -----END CERTIFICATE-----
