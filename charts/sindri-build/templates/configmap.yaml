@@ -77,9 +77,9 @@ data:
                   - name: BAO_CACERT
                     value: /etc/openbao/ca.pem
                   - name: BAO_ROLE
-                    value: meru-{{ .Values.app }}-build
+                    value: meru-build # shared (D71): reads the caller's own namespace's keys only
                   - name: BAO_KEYS_PATH # KV v2 under the apps mount
-                    value: apps/data/meru/{{ .Values.app }}/build
+                    value: apps/data/meru/{{ include "sindri-build.namespace" . }}/build
                   - name: BAO_JWT_FILE
                     value: /var/run/secrets/openbao/token
                 resources:

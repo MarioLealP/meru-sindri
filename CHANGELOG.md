@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## sindri-build 0.4.0
+
+### Changed
+- ESO and the build jobs log in through the shared roles `meru-eso` and `meru-build` instead of
+  `meru-<app>-build-eso` / `meru-<app>-build`: OpenBao fills in the namespace from the login, so a new app needs no
+  OpenBao setup of its own.
+- Build keys are read from the build namespace's own path, `apps/meru/<app>-build/build` (was
+  `apps/meru/<app>/build`).
+
 ## sindri-build 0.3.0
 
 ### Changed
