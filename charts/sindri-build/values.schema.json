@@ -33,9 +33,10 @@
     "openbao": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["addr", "caCert"],
+      "required": ["addr", "refreshInterval", "caCert"],
       "properties": {
         "addr": { "type": "string", "pattern": "^https://" },
+        "refreshInterval": { "type": "string", "pattern": "^[0-9]+(s|m|h)$" },
         "caCert": { "type": "string", "pattern": "-----BEGIN CERTIFICATE-----" }
       }
     },

@@ -46,7 +46,7 @@ spec:
             - name: GITEA_RUNNER_REGISTRATION_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: sindri-registration # a Gitea runner token scoped to Meru/<app>
+                  name: sindri-registration # a Gitea runner token scoped to Meru/<app>; ESO fills it
                   key: token
           ports:
             - name: metrics

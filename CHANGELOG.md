@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## sindri-build 0.3.0
+
+### Changed
+- The runner's `sindri-registration` Secret is filled by the External Secrets Operator from OpenBao
+  (`apps/meru/<app>-build/eso/sindri-registration`, role `meru-<app>-build-eso`) and owned by its ExternalSecret,
+  no longer made by hand. New: the `eso` ServiceAccount (ESO's login, no pod runs as it), the `openbao`
+  SecretStore (wave -2) and the ExternalSecret (wave -1); the Namespace moves to wave -3 so it exists first.
+  `openbao.refreshInterval` (default 5m).
+
 ## sindri-build 0.2.0
 
 ### Changed
