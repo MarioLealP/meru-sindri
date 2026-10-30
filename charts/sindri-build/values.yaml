@@ -30,11 +30,13 @@ serviceResources:
 # A build job's memory limit (BuildKit).
 buildMemoryLimit: 4Gi
 
-# Where `sindri` jobs fetch the app's build keys (Zot login + signing key): OpenBao's Kubernetes login, role
-# meru-<app>-build, keys at apps/meru/<app>/build. A job gets a 10-minute token for the `signer` account, usable
-# only with OpenBao (audience), and an in-memory /keys for what it fetches.
+# OpenBao, through its Kubernetes login. `sindri` jobs fetch the app's build keys (Zot login + signing key): role
+# meru-<app>-build, keys at apps/meru/<app>/build; a job gets a 10-minute token for the `signer` account, usable
+# only with OpenBao (audience), and an in-memory /keys for what it fetches. ESO fills the runner's registration
+# token: role meru-<app>-build-eso, apps/meru/<app>-build/eso/sindri-registration.
 openbao:
   addr: https://openbao.clockmost.internal:8204
+  refreshInterval: 5m # how often ESO re-reads the runner's registration token (apps/meru/<app>-build/eso/)
   # The clockmost root CA (public): OpenBao's certificate chains to it.
   caCert: |
     -----BEGIN CERTIFICATE-----

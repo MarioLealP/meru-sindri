@@ -4,6 +4,8 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: {{ include "sindri-build.namespace" . }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-3" # before the ESO objects inside it
   labels:
     pod-security.kubernetes.io/enforce: baseline
     pod-security.kubernetes.io/warn: restricted
