@@ -37,8 +37,10 @@ data:
               type: RuntimeDefault
           containers:
             - name: job
+              # Every job takes one of the node's `build-slot`s, whichever app it is for, so the third job at once waits
+              # as Pending. The `sindri` label below keeps this: the runner merges templates key by key.
               resources:
-                {{- toYaml .Values.jobResources | nindent 16 }}
+                {{- toYaml (merge (dict "limits" (dict "clockmost.com/build-slot" "1")) .Values.jobResources) | nindent 16 }}
               securityContext:
                 allowPrivilegeEscalation: false
                 capabilities:
