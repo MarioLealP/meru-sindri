@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## sindri-build 0.5.0
+
+### Changed
+- Every CI job pod asks for one `clockmost.com/build-slot`. The node has 2, so at most two jobs run at once across all
+  apps and the rest wait as `Pending`. Without the slots on the node, every job waits forever: add them first.
+
 ## sindri-build 0.4.0
 
 ### Changed
