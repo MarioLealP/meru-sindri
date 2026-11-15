@@ -1,4 +1,4 @@
-# The job pods run rootless BuildKit and need "baseline" (plus Meru/kyverno's per-app exception); the runner itself
+# The job pods run rootless BuildKit and need Pod Security "baseline"; the runner itself
 # meets "restricted", and "warn: restricted" shows what only the build pods are allowed.
 apiVersion: v1
 kind: Namespace
