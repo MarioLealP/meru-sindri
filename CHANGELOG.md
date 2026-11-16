@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## sindri-build 0.10.0
+
+### Added
+- `ephemeral.enabled` (default `false`, so every app renders as in 0.9.0): a KEDA ScaledJob replaces the always-on runner
+  Deployment and its registration PVC. KEDA polls Shikigami's `GET <queueUrl>/builds/<app>/waiting` and starts one Job per
+  waiting job (`maxRunners`, default 1); each Job registers an ephemeral runner (`GITEA_RUNNER_EPHEMERAL`,
+  `GITEA_RUNNER_ONCE`), takes one job, unregisters and exits. Registration lives in an emptyDir. Nothing runs while no
+  build waits: 55 idle runner pods + PVCs go away once every app is flipped (echo first).
+
 ## sindri-build 0.9.0
 
 ### Removed
