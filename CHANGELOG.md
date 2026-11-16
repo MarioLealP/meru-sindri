@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## sindri-build 0.8.1
+
+### Fixed
+- A restored app's runner no longer crashloops on a stale `/data/.runner`. Retire deletes the runner's record in Gitea,
+  but the `local` volume path is reused on restore, so the old file survived and the daemon died with "unregistered
+  runner" on every start (cm-q8ax). The runner now starts through `files/entrypoint.sh`: when the daemon exits with
+  that error, the file is removed and the restart registers fresh with the `sindri-registration` token. Every other
+  failure leaves it alone. Tested in `scripts/check.sh` with a fake `run.sh`.
+
 ## sindri-build 0.8.0
 
 ### Added
