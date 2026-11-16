@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## sindri-build 0.9.0
+
+### Removed
+- `sindri` jobs no longer run as `signer` and get no OpenBao token, `BAO_*` env, `/keys` or `DOCKER_CONFIG`: a
+  workflow can no longer fetch the app's signing key or Zot login. Releases are meru-release's
+  (Meru/meru-release), which runs its own Jobs as `signer`. App workflows still fetching keys fail at that step.
+  The `signer` account and the `openbao-ca` ConfigMap stay (meru-release's Jobs use them).
+
 ## sindri-build 0.8.2
 
 ### Security

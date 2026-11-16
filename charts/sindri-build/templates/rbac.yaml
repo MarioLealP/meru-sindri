@@ -46,7 +46,7 @@ subjects:
     namespace: {{ include "sindri-build.namespace" . }}
 {{- if .Values.build }}
 ---
-# The identity of `sindri` jobs towards OpenBao (role meru-<app>-build). No Kubernetes permissions at all.
+# The identity of meru-release's release Jobs towards OpenBao (role meru-build). No Kubernetes permissions at all.
 apiVersion: v1
 kind: ServiceAccount
 metadata:
