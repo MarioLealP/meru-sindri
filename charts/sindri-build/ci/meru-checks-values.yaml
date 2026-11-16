@@ -1,0 +1,9 @@
+# Meru/meru: a check-only runner (build: false) - one restricted label, no sindri, no signer, no OpenBao.
+app: meru
+owner: mario
+build: false
+labels:
+  sindri-check: ghcr.io/astral-sh/uv@sha256:f68dfb3eaf23a53afb5f74833bdacc0ce586d69f8063c48f9f3ebbe42e048e4a
+network:
+  host:
+    ports: [443, 6443] # Caddy (Gitea), the Kubernetes API - no OpenBao

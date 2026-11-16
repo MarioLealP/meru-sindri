@@ -52,6 +52,7 @@ data:
                 allowPrivilegeEscalation: false
                 capabilities:
                   drop: [ALL]
+      {{- if .Values.build }}
       # Jobs on the `sindri` label build the image: rootless BuildKit as uid 1000 with exactly what the build spike
       # needed (clockmost-kubernetes.md step 2c) - SELinux container_engine_t, the meru/build.json seccomp profile
       # (installed on every node), SETUID/SETGID for newuidmap. They run as `signer` with a 10-minute token meant only
@@ -116,6 +117,8 @@ data:
                 emptyDir:
                   medium: Memory
                   sizeLimit: 1Mi
+      {{- end }}
+{{- if .Values.build }}
 ---
 # OpenBao's CA, for the `sindri` jobs' key fetch.
 apiVersion: v1
@@ -128,3 +131,4 @@ metadata:
 data:
   ca.pem: |
     {{- .Values.openbao.caCert | nindent 4 }}
+{{- end }}

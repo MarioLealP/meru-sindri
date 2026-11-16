@@ -32,6 +32,9 @@ labels:
   sindri-check: ghcr.io/astral-sh/uv@sha256:<digest>
 ```
 
+A repo that only runs checks (Meru/meru, Meru/nuwa) sets `build: false`: no `sindri` label, no `signer` account, no
+OpenBao login or keys, no release Role - every job runs restricted. Only the registration token is made for it.
+
 `charts/sindri-build/values.yaml` documents each option and `charts/sindri-build/values.schema.json` rejects unknown
 keys. In Meru, Argo CD renders the chart for each app; nothing runs `helm install`. Per app, three credentials are made
 outside the chart: the runner's registration token (`sindri-registration`), and in OpenBao (`apps/meru/<app>/build`,
