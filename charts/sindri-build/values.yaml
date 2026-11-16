@@ -1,7 +1,7 @@
 # The app this build namespace serves. The namespace is <app>-build; the runner registers to Meru/<app> only (its
 # registration token, Secret `sindri-registration`, is made per app by meru-app-creds).
 app: ""
-# Owner label (Meru's CMDB, compliance rule 7).
+# Owner label (Meru's CMDB).
 owner: ""
 
 runner:
@@ -41,7 +41,7 @@ network:
     namespace: zot
     port: 5000
 
-# OpenBao, through its Kubernetes login and the shared roles (D71: OpenBao fills in the namespace from the login).
+# OpenBao, through its Kubernetes login and the shared roles (OpenBao fills in the namespace from the login).
 # `sindri` jobs fetch the app's build keys (Zot login + signing key): role meru-build, keys at
 # apps/meru/<app>-build/build; a job gets a 10-minute token for the `signer` account, usable only with OpenBao
 # (audience), and an in-memory /keys for what it fetches. ESO fills the runner's registration token: role meru-eso,

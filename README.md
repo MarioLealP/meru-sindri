@@ -1,4 +1,4 @@
-# Sindri
+# Sindri - app builds
 
 The build side of **Meru**, a small in-house container platform (CaaS) on k3s. Sindri holds `sindri-build`, the Helm
 chart that gives one Meru app its build namespace: a [Gitea runner](https://gitea.com/gitea/runner) registered to that
