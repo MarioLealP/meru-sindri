@@ -34,6 +34,8 @@ spec:
       containers:
         - name: runner
           image: {{ .Values.runner.image }}
+          # The image's tini + run.sh, wrapped so a stale /data/.runner is dropped (files/entrypoint.sh).
+          command: [/sbin/tini, --, bash, /config/entrypoint.sh]
           env:
             - name: CONFIG_FILE
               value: /config/config.yaml

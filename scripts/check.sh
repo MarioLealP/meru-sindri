@@ -25,3 +25,28 @@ for unwanted in 'name: signer' 'serviceAccountName: signer' 'BAO_' 'name: openba
   fi
 done
 grep -qF 'sindri-check:kubernetes://' out/meru-checks.yaml || { echo "meru-checks: no sindri-check label" >&2; exit 1; }
+
+echo "== entrypoint: a stale registration is dropped, a healthy one is kept"
+shellcheck charts/sindri-build/files/entrypoint.sh
+grep -qF 'entrypoint.sh' out/echo.yaml || { echo "echo: entrypoint.sh not rendered" >&2; exit 1; }
+grep -qF 'bash, /config/entrypoint.sh' out/echo.yaml || { echo "echo: runner not started through entrypoint.sh" >&2; exit 1; }
+work="$(mktemp -d)"
+trap 'rm -rf "$work"' EXIT
+mkdir "$work/bin"
+cat >"$work/bin/run.sh" <<'FAKE' # stands in for the image's run.sh: prints $FAKE_LOG and exits with $FAKE_RC
+#!/usr/bin/env bash
+echo "$FAKE_LOG"
+exit "$FAKE_RC"
+FAKE
+chmod +x "$work/bin/run.sh"
+run_entrypoint() { # log, exit code -> the entrypoint's exit code
+  echo '{"id":4}' >"$work/.runner"
+  FAKE_LOG="$1" FAKE_RC="$2" RUNNER_STATE_FILE="$work/.runner" PATH="$work/bin:$PATH" \
+    bash charts/sindri-build/files/entrypoint.sh >/dev/null && return 0 || return $?
+}
+rc=0; run_entrypoint 'level=error msg="unregistered runner"' 1 || rc=$?
+[ "$rc" = 1 ] && [ ! -e "$work/.runner" ] || { echo "entrypoint: stale .runner kept (rc=$rc)" >&2; exit 1; }
+rc=0; run_entrypoint 'level=error msg="gitea unreachable"' 1 || rc=$?
+[ "$rc" = 1 ] && [ -e "$work/.runner" ] || { echo "entrypoint: .runner removed for another failure (rc=$rc)" >&2; exit 1; }
+rc=0; run_entrypoint 'unregistered runner (but the daemon exited cleanly)' 0 || rc=$?
+[ "$rc" = 0 ] && [ -e "$work/.runner" ] || { echo "entrypoint: .runner removed after a clean exit (rc=$rc)" >&2; exit 1; }

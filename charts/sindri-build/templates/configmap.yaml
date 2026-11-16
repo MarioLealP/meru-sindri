@@ -7,6 +7,8 @@ metadata:
   labels:
     {{- include "sindri-build.labels" . | nindent 4 }}
 data:
+  entrypoint.sh: |
+    {{- .Files.Get "files/entrypoint.sh" | nindent 4 }}
   config.yaml: |
     log:
       level: info
