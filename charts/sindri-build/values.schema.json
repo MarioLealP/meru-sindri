@@ -4,6 +4,8 @@
   "type": "object",
   "additionalProperties": false,
   "required": ["app", "owner", "runner", "labels", "openbao"],
+  "if": { "not": { "properties": { "build": { "const": false } }, "required": ["build"] } },
+  "then": { "properties": { "labels": { "required": ["sindri"] } } },
   "properties": {
     "app": {
       "description": "The app's name (the Meru/<app> repo); the namespace is <app>-build.",
@@ -20,10 +22,14 @@
         "timeout": { "type": "string", "pattern": "^[0-9]+(s|m|h)$" }
       }
     },
+    "build": {
+      "description": "false: a check-only runner - no `sindri` label, no signer account, no OpenBao.",
+      "type": "boolean"
+    },
     "labels": {
-      "description": "Runner label -> job image. `sindri` (the build) is required.",
+      "description": "Runner label -> job image. `sindri` (the build) is required unless build is false, which ignores it.",
       "type": "object",
-      "required": ["sindri"],
+      "minProperties": 1,
       "propertyNames": { "pattern": "^[a-z][-a-z0-9]{0,30}$" },
       "additionalProperties": { "$ref": "#/definitions/image" }
     },

@@ -20,7 +20,9 @@ helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
 {{- define "sindri-build.runnerLabels" -}}
 {{- $labels := list -}}
 {{- range $label, $image := .Values.labels -}}
+{{- if or $.Values.build (ne $label "sindri") -}}
 {{- $labels = append $labels (printf "%s:kubernetes://%s" $label $image) -}}
+{{- end -}}
 {{- end -}}
 {{ join "," $labels }}
 {{- end }}

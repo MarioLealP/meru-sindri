@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## sindri-build 0.8.0
+
+### Added
+- `build: false`: a check-only runner for repos that only run their checks (Meru/meru, Meru/nuwa). No `sindri`
+  label (ignored if given), no `signer` account, no OpenBao job wiring or CA, no `meru-release` Role. Default `true`:
+  every app renders as in 0.7.0. New test case `ci/meru-checks-values.yaml` asserts none of those render.
+
 ## sindri-build 0.7.0
 
 ### Added

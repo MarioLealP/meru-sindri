@@ -44,6 +44,7 @@ subjects:
   - kind: ServiceAccount
     name: sindri
     namespace: {{ include "sindri-build.namespace" . }}
+{{- if .Values.build }}
 ---
 # The identity of `sindri` jobs towards OpenBao (role meru-<app>-build). No Kubernetes permissions at all.
 apiVersion: v1
@@ -54,3 +55,4 @@ metadata:
   labels:
     {{- include "sindri-build.labels" . | nindent 4 }}
 automountServiceAccountToken: false
+{{- end }}

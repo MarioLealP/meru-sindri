@@ -1,3 +1,4 @@
+{{- if .Values.build }}
 # What meru-release (Meru/meru-release, namespace meru-release) may do in this build namespace: run the app's release
 # Jobs - build, scan, push, sign - as the `signer` account, and read their pods' termination message (the digest).
 # Nothing else here, and no Secrets.
@@ -31,3 +32,4 @@ subjects:
   - kind: ServiceAccount
     name: meru-release
     namespace: meru-release
+{{- end }}

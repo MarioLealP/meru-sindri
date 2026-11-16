@@ -16,3 +16,12 @@ for values in "$chart"/ci/*-values.yaml; do
     "out/$case_name.yaml"
 done
 
+
+echo "== meru-checks: no build label, no signer, no OpenBao, no release Role"
+for unwanted in 'name: signer' 'serviceAccountName: signer' 'BAO_' 'name: openbao-ca' 'name: meru-release' 'sindri:kubernetes://'; do
+  if grep -qF -- "$unwanted" out/meru-checks.yaml; then
+    echo "meru-checks: '$unwanted' rendered in a check-only runner" >&2
+    exit 1
+  fi
+done
+grep -qF 'sindri-check:kubernetes://' out/meru-checks.yaml || { echo "meru-checks: no sindri-check label" >&2; exit 1; }

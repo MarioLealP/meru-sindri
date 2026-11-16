@@ -8,6 +8,10 @@ runner:
   image: docker.io/gitea/runner:5.2.4@sha256:e8b3c7a5ed435fec38d1faf730cb784606cdd1c02e8543b6b96525b53281e60a
   timeout: 1h # one job's limit; the runner's grace period follows it
 
+# false: a check-only runner - no `sindri` label, no `signer` account, no OpenBao login or keys, no release Role. Every
+# job runs restricted, with nothing to steal. For repos that only run their checks (Meru/meru, Meru/nuwa).
+build: true
+
 # Runner labels -> the image each job runs in. `sindri` is required: rootless BuildKit, the only label whose jobs get
 # the build settings and the push + signing credentials. Add `sindri-check` (or others) for jobs that run the
 # PR's code - tests, linters - with nothing to steal.
