@@ -30,6 +30,33 @@
     "jobResources": { "$ref": "#/definitions/resources" },
     "serviceResources": { "$ref": "#/definitions/resources" },
     "buildMemoryLimit": { "type": "string" },
+    "network": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "nodeAddress", "host", "registry"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "nodeAddress": { "type": "string", "pattern": "^[0-9.]+/[0-9]+$" },
+        "host": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["address", "ports"],
+          "properties": {
+            "address": { "type": "string", "pattern": "^[0-9.]+$" },
+            "ports": { "type": "array", "minItems": 1, "items": { "type": "integer" } }
+          }
+        },
+        "registry": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["namespace", "port"],
+          "properties": {
+            "namespace": { "type": "string" },
+            "port": { "type": "integer" }
+          }
+        }
+      }
+    },
     "openbao": {
       "type": "object",
       "additionalProperties": false,

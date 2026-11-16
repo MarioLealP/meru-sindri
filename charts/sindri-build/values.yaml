@@ -30,6 +30,17 @@ serviceResources:
 # A build job's memory limit (BuildKit).
 buildMemoryLimit: 4Gi
 
+# The build namespace's NetworkPolicy (templates/networkpolicy.yaml): what its pods may reach.
+network:
+  enabled: true
+  nodeAddress: 10.42.0.1/32 # the node's cni0 address: the kubelet's probes come from it
+  host:
+    address: 192.168.10.110 # Bahamut
+    ports: [443, 8204, 6443] # Caddy (Gitea's HTTPS), OpenBao, the Kubernetes API
+  registry:
+    namespace: zot
+    port: 5000
+
 # OpenBao, through its Kubernetes login and the shared roles (D71: OpenBao fills in the namespace from the login).
 # `sindri` jobs fetch the app's build keys (Zot login + signing key): role meru-build, keys at
 # apps/meru/<app>-build/build; a job gets a 10-minute token for the `signer` account, usable only with OpenBao

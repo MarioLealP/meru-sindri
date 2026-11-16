@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## sindri-build 0.6.0
+
+### Added
+- A NetworkPolicy for the whole build namespace (`network`, on by default). In: only the node (the kubelet's probes).
+  Out: CoreDNS, the host's Caddy (Gitea over HTTPS), OpenBao and Kubernetes API ports, Zot's pods, and public
+  addresses. CI jobs run the code of any pull request; they can no longer reach the LAN, the router, other namespaces
+  or the host's other ports. `network.enabled: false` turns it off.
+
 ## sindri-build 0.5.0
 
 ### Changed
