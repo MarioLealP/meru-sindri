@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## sindri-build 0.7.0
+
+### Added
+- `meru-release` Role + RoleBinding in every build namespace: Meru/meru-release (namespace `meru-release`) may create,
+  read and delete Jobs and read pods there - the app's release Jobs, which run as `signer`. Inert until meru-release
+  exists.
+
 ## sindri-build 0.6.0
 
 ### Added

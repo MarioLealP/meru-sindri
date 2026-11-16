@@ -1,0 +1,33 @@
+# What meru-release (Meru/meru-release, namespace meru-release) may do in this build namespace: run the app's release
+# Jobs - build, scan, push, sign - as the `signer` account, and read their pods' termination message (the digest).
+# Nothing else here, and no Secrets.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: meru-release
+  namespace: {{ include "sindri-build.namespace" . }}
+  labels:
+    {{- include "sindri-build.labels" . | nindent 4 }}
+rules:
+  - apiGroups: [batch]
+    resources: [jobs]
+    verbs: [create, get, list, delete]
+  - apiGroups: [""]
+    resources: [pods]
+    verbs: [get, list]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: meru-release
+  namespace: {{ include "sindri-build.namespace" . }}
+  labels:
+    {{- include "sindri-build.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: meru-release
+subjects:
+  - kind: ServiceAccount
+    name: meru-release
+    namespace: meru-release
