@@ -3,7 +3,7 @@
 {{ required "app is required" .Values.app }}-build
 {{- end }}
 
-{{/* Meru's CMDB labels (compliance rule 7) - every resource and every pod carries them. */}}
+{{/* Meru's CMDB labels - every resource and every pod carries them. */}}
 {{- define "sindri-build.meruLabels" -}}
 app.kubernetes.io/part-of: meru
 meru.clockmost.com/app: {{ .Values.app }}
