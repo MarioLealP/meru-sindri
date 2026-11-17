@@ -67,3 +67,11 @@ openbao:
     EEmyXqPSoqB3mgIwMiP0/1G6XFRxMT+hHj16+uOjv6l3nqPuUWomsOQakPF5i51U
     AwqvzZjfzlr4WU9o
     -----END CERTIFICATE-----
+
+# Ephemeral runners (audit plan P5.2): instead of the always-on runner, KEDA starts a one-job runner per waiting job.
+ephemeral:
+  enabled: false
+  queueUrl: http://shikigami.shikigami.svc:8080 # serves GET /builds/<app>/waiting -> {"waiting": n}
+  pollingInterval: 15 # seconds between KEDA's polls
+  maxRunners: 1 # runners at once for this app (each takes one job)
+  activeDeadlineSeconds: 7500 # one job's 1h timeout + the runner's grace, with room; raise with runner.timeout

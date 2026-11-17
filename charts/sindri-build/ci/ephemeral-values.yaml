@@ -1,0 +1,5 @@
+# Echo with ephemeral runners: a ScaledJob instead of the Deployment and its volume.
+app: echo
+owner: mario
+ephemeral:
+  enabled: true

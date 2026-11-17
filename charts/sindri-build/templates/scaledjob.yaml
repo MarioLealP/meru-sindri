@@ -1,0 +1,97 @@
+{{- if .Values.ephemeral.enabled }}
+# Ephemeral runners: no runner waits around. KEDA asks Shikigami how many of this app's Gitea jobs are waiting and
+# starts one Job per waiting job (at most maxRunners). Each Job registers a one-job runner, takes one job, and the
+# runner unregisters and exits. Replaces the always-on Deployment and its registration volume.
+apiVersion: keda.sh/v1alpha1
+kind: ScaledJob
+metadata:
+  name: sindri
+  namespace: {{ include "sindri-build.namespace" . }}
+  labels:
+    app.kubernetes.io/name: sindri
+    {{- include "sindri-build.labels" . | nindent 4 }}
+spec:
+  pollingInterval: {{ .Values.ephemeral.pollingInterval }}
+  maxReplicaCount: {{ .Values.ephemeral.maxRunners }}
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTargetRef:
+    backoffLimit: 0 # a failed runner leaves its job waiting; the next poll starts a fresh one
+    activeDeadlineSeconds: {{ .Values.ephemeral.activeDeadlineSeconds }}
+    template:
+      metadata:
+        labels:
+          app.kubernetes.io/name: sindri
+          {{- include "sindri-build.meruLabels" . | nindent 10 }}
+        annotations:
+          checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      spec:
+        restartPolicy: Never
+        serviceAccountName: sindri
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 1000
+          fsGroup: 1000
+          seccompProfile:
+            type: RuntimeDefault
+        containers:
+          - name: runner
+            image: {{ .Values.runner.image }}
+            env:
+              - name: CONFIG_FILE
+                value: /config/config.yaml
+              - name: GITEA_INSTANCE_URL
+                value: https://git.clockmost.com
+              - name: POD_NAME
+                valueFrom:
+                  fieldRef:
+                    fieldPath: metadata.name
+              - name: GITEA_RUNNER_NAME
+                value: sindri-{{ .Values.app }}-$(POD_NAME)
+              - name: GITEA_RUNNER_LABELS
+                value: {{ include "sindri-build.runnerLabels" . | quote }}
+              - name: GITEA_RUNNER_EPHEMERAL # registered for one job; Gitea drops the runner after it
+                value: "1"
+              - name: GITEA_RUNNER_ONCE # the daemon exits after that job
+                value: "1"
+              - name: GITEA_RUNNER_REGISTRATION_TOKEN
+                valueFrom:
+                  secretKeyRef:
+                    name: sindri-registration
+                    key: token
+            resources:
+              requests:
+                cpu: 10m
+                memory: 32Mi
+              limits:
+                memory: 256Mi
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop: [ALL]
+            volumeMounts:
+              - name: config
+                mountPath: /config
+              - name: data
+                mountPath: /data
+              - name: tmp
+                mountPath: /tmp
+        volumes:
+          - name: config
+            configMap:
+              name: sindri-config
+          - name: data
+            emptyDir:
+              sizeLimit: 16Mi # the one-job registration only
+          - name: tmp
+            emptyDir:
+              sizeLimit: 64Mi
+  triggers:
+    - type: metrics-api
+      metadata:
+        url: {{ printf "%s/builds/%s/waiting" (trimSuffix "/" .Values.ephemeral.queueUrl) .Values.app | quote }}
+        valueLocation: waiting
+        targetValue: "1"
+{{- end }}

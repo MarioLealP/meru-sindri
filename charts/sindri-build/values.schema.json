@@ -73,6 +73,18 @@
         "caCert": { "type": "string", "pattern": "-----BEGIN CERTIFICATE-----" }
       }
     },
+    "ephemeral": {
+      "description": "One-job runners started by KEDA instead of the always-on runner.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "queueUrl": { "type": "string", "pattern": "^https?://" },
+        "pollingInterval": { "type": "integer", "minimum": 5 },
+        "maxRunners": { "type": "integer", "minimum": 1, "maximum": 4 },
+        "activeDeadlineSeconds": { "type": "integer", "minimum": 600 }
+      }
+    },
     "global": { "type": "object" }
   },
   "definitions": {
