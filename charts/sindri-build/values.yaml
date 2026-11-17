@@ -34,6 +34,23 @@ serviceResources:
 # A build job's memory limit (BuildKit).
 buildMemoryLimit: 4Gi
 
+# What one CI job (any label) costs against the node's build budget (cm-jnxa), so the node runs as many jobs at once as fit
+# in it, not a fixed count. The node advertises three pools as extended resources: clockmost.com/build-memory (MiB),
+# build-disk (GiB) and build-cpu (millicores). A job pod asks for its cost in all three and waits as Pending until all
+# fit. The cost is declared (deploy/meru.yaml buildCost), not measured by the kubelet. enforceDisk (the appset sets it when
+# the app declares a disk cost) also gives the build container an ephemeral-storage limit of 1.25x its disk cost: kubelet
+# then evicts only that pod if it overruns, and not the node's other pods.
+buildCost:
+  memory: 512Mi
+  disk: 2Gi
+  cpu: "1"
+  enforceDisk: false
+# The pools the node advertises (ops/k3s/install.sh). A cost above a pool could never be scheduled, so the chart refuses it.
+buildPool:
+  memory: 5120
+  disk: 24
+  cpu: 8000
+
 # The build namespace's NetworkPolicy (templates/networkpolicy.yaml): what its pods may reach.
 network:
   enabled: true

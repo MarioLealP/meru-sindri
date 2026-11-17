@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## sindri-build 0.11.0
+
+### Changed (breaking: the node needs the three pools first)
+- A CI job no longer takes one of the node's two `build-slot`s. It asks for its **cost** in three pools the node
+  advertises as extended resources - `clockmost.com/build-memory` (MiB), `build-disk` (GiB), `build-cpu` (millicores) -
+  and waits as Pending until all three fit, so many small builds run together and one big build can run alone
+  (cm-jnxa). `buildCost` (memory 512Mi, disk 2Gi, cpu 1 by default) is the cost; `buildPool` is the pool sizes the chart
+  checks against (5120 MiB / 24 GiB / 8000 m), because a cost above a pool could never be scheduled. Measured on
+  2026-11-17: ordinary builds use 60-340 MB and under 1 core, a compile like caddy's bursts to 0.7 GB and 6.6 cores for
+  seconds, one felt-llm CUDA build takes ~19 GB of the image volume.
+- `buildCost.enforceDisk: true` (the appset sets it when the app declares a disk cost) adds an ephemeral-storage limit
+  of 1.25x the disk cost, at least 3Gi, to the `sindri` build container: kubelet evicts only that pod if it overruns,
+  and not the node's other pods (what happened to felt-vision on 2026-11-17).
+- Roll out only after `install.sh` has put the three pools on the node, or every job waits forever.
+
 ## sindri-build 0.10.0
 
 ### Added

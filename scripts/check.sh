@@ -17,6 +17,21 @@ for values in "$chart"/ci/*-values.yaml; do
 done
 
 
+echo "== budget: a job asks for its cost in all three pools; a declared disk cost is enforced; a cost above a pool is refused"
+for want in 'clockmost.com/build-memory: 512' 'clockmost.com/build-disk: 2' 'clockmost.com/build-cpu: 1000'; do
+  grep -qF -- "$want" out/echo.yaml || { echo "echo: default cost '$want' not rendered" >&2; exit 1; }
+done
+grep -qF 'build-slot' out/echo.yaml && { echo "echo: the old build-slot is still requested" >&2; exit 1; }
+grep -qF 'ephemeral-storage' out/echo.yaml && { echo "echo: ephemeral-storage limited without a declared disk cost" >&2; exit 1; }
+for want in 'clockmost.com/build-memory: 4096' 'clockmost.com/build-disk: 20' 'clockmost.com/build-cpu: 4000' 'ephemeral-storage: 25Gi'; do
+  grep -qF -- "$want" out/budget.yaml || { echo "budget: '$want' not rendered" >&2; exit 1; }
+done
+for over in buildCost.memory=6Gi buildCost.disk=25Gi buildCost.cpu=9; do
+  if helm template over "$chart" -n test -f "$chart/ci/echo-values.yaml" --set "$over" >/dev/null 2>&1; then
+    echo "budget: $over is above a pool but the chart rendered it" >&2; exit 1
+  fi
+done
+
 echo "== meru-checks: no build label, no signer, no OpenBao, no release Role"
 for unwanted in 'name: signer' 'serviceAccountName: signer' 'BAO_' 'name: openbao-ca' 'name: meru-release' 'sindri:kubernetes://'; do
   if grep -qF -- "$unwanted" out/meru-checks.yaml; then

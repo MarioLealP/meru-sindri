@@ -3,23 +3,58 @@
   "title": "sindri-build values",
   "type": "object",
   "additionalProperties": false,
-  "required": ["app", "owner", "runner", "labels", "openbao"],
-  "if": { "not": { "properties": { "build": { "const": false } }, "required": ["build"] } },
-  "then": { "properties": { "labels": { "required": ["sindri"] } } },
+  "required": [
+    "app",
+    "owner",
+    "runner",
+    "labels",
+    "openbao"
+  ],
+  "if": {
+    "not": {
+      "properties": {
+        "build": {
+          "const": false
+        }
+      },
+      "required": [
+        "build"
+      ]
+    }
+  },
+  "then": {
+    "properties": {
+      "labels": {
+        "required": [
+          "sindri"
+        ]
+      }
+    }
+  },
   "properties": {
     "app": {
       "description": "The app's name (the Meru/<app> repo); the namespace is <app>-build.",
       "type": "string",
       "pattern": "^[a-z]([-a-z0-9]{0,40}[a-z0-9])?$"
     },
-    "owner": { "type": "string", "pattern": "^[a-z0-9]([-a-z0-9_.]{0,61}[a-z0-9])?$" },
+    "owner": {
+      "type": "string",
+      "pattern": "^[a-z0-9]([-a-z0-9_.]{0,61}[a-z0-9])?$"
+    },
     "runner": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["image"],
+      "required": [
+        "image"
+      ],
       "properties": {
-        "image": { "$ref": "#/definitions/image" },
-        "timeout": { "type": "string", "pattern": "^[0-9]+(s|m|h)$" }
+        "image": {
+          "$ref": "#/definitions/image"
+        },
+        "timeout": {
+          "type": "string",
+          "pattern": "^[0-9]+(s|m|h)$"
+        }
       }
     },
     "build": {
@@ -30,35 +65,74 @@
       "description": "Runner label -> job image. `sindri` (the build) is required unless build is false, which ignores it.",
       "type": "object",
       "minProperties": 1,
-      "propertyNames": { "pattern": "^[a-z][-a-z0-9]{0,30}$" },
-      "additionalProperties": { "$ref": "#/definitions/image" }
+      "propertyNames": {
+        "pattern": "^[a-z][-a-z0-9]{0,30}$"
+      },
+      "additionalProperties": {
+        "$ref": "#/definitions/image"
+      }
     },
-    "jobResources": { "$ref": "#/definitions/resources" },
-    "serviceResources": { "$ref": "#/definitions/resources" },
-    "buildMemoryLimit": { "type": "string" },
+    "jobResources": {
+      "$ref": "#/definitions/resources"
+    },
+    "serviceResources": {
+      "$ref": "#/definitions/resources"
+    },
+    "buildMemoryLimit": {
+      "type": "string"
+    },
     "network": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["enabled", "nodeAddress", "host", "registry"],
+      "required": [
+        "enabled",
+        "nodeAddress",
+        "host",
+        "registry"
+      ],
       "properties": {
-        "enabled": { "type": "boolean" },
-        "nodeAddress": { "type": "string", "pattern": "^[0-9.]+/[0-9]+$" },
+        "enabled": {
+          "type": "boolean"
+        },
+        "nodeAddress": {
+          "type": "string",
+          "pattern": "^[0-9.]+/[0-9]+$"
+        },
         "host": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["address", "ports"],
+          "required": [
+            "address",
+            "ports"
+          ],
           "properties": {
-            "address": { "type": "string", "pattern": "^[0-9.]+$" },
-            "ports": { "type": "array", "minItems": 1, "items": { "type": "integer" } }
+            "address": {
+              "type": "string",
+              "pattern": "^[0-9.]+$"
+            },
+            "ports": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "integer"
+              }
+            }
           }
         },
         "registry": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["namespace", "port"],
+          "required": [
+            "namespace",
+            "port"
+          ],
           "properties": {
-            "namespace": { "type": "string" },
-            "port": { "type": "integer" }
+            "namespace": {
+              "type": "string"
+            },
+            "port": {
+              "type": "integer"
+            }
           }
         }
       }
@@ -66,11 +140,24 @@
     "openbao": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["addr", "refreshInterval", "caCert"],
+      "required": [
+        "addr",
+        "refreshInterval",
+        "caCert"
+      ],
       "properties": {
-        "addr": { "type": "string", "pattern": "^https://" },
-        "refreshInterval": { "type": "string", "pattern": "^[0-9]+(s|m|h)$" },
-        "caCert": { "type": "string", "pattern": "-----BEGIN CERTIFICATE-----" }
+        "addr": {
+          "type": "string",
+          "pattern": "^https://"
+        },
+        "refreshInterval": {
+          "type": "string",
+          "pattern": "^[0-9]+(s|m|h)$"
+        },
+        "caCert": {
+          "type": "string",
+          "pattern": "-----BEGIN CERTIFICATE-----"
+        }
       }
     },
     "ephemeral": {
@@ -78,14 +165,67 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "enabled": { "type": "boolean" },
-        "queueUrl": { "type": "string", "pattern": "^https?://" },
-        "pollingInterval": { "type": "integer", "minimum": 5 },
-        "maxRunners": { "type": "integer", "minimum": 1, "maximum": 4 },
-        "activeDeadlineSeconds": { "type": "integer", "minimum": 600 }
+        "enabled": {
+          "type": "boolean"
+        },
+        "queueUrl": {
+          "type": "string",
+          "pattern": "^https?://"
+        },
+        "pollingInterval": {
+          "type": "integer",
+          "minimum": 5
+        },
+        "maxRunners": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4
+        },
+        "activeDeadlineSeconds": {
+          "type": "integer",
+          "minimum": 600
+        }
       }
     },
-    "global": { "type": "object" }
+    "global": {
+      "type": "object"
+    },
+    "buildCost": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "memory": {
+          "type": "string",
+          "pattern": "^[1-9][0-9]*(Mi|Gi)$"
+        },
+        "disk": {
+          "type": "string",
+          "pattern": "^[1-9][0-9]*Gi$"
+        },
+        "cpu": {
+          "type": "string",
+          "pattern": "^[1-9][0-9]*m?$"
+        },
+        "enforceDisk": {
+          "type": "boolean"
+        }
+      }
+    },
+    "buildPool": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "memory": {
+          "type": "integer"
+        },
+        "disk": {
+          "type": "integer"
+        },
+        "cpu": {
+          "type": "integer"
+        }
+      }
+    }
   },
   "definitions": {
     "image": {
@@ -96,24 +236,46 @@
     "resources": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["requests", "limits"],
+      "required": [
+        "requests",
+        "limits"
+      ],
       "properties": {
         "requests": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["cpu", "memory"],
+          "required": [
+            "cpu",
+            "memory"
+          ],
           "properties": {
-            "cpu": { "type": ["string", "number"] },
-            "memory": { "type": "string" }
+            "cpu": {
+              "type": [
+                "string",
+                "number"
+              ]
+            },
+            "memory": {
+              "type": "string"
+            }
           }
         },
         "limits": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["memory"],
+          "required": [
+            "memory"
+          ],
           "properties": {
-            "cpu": { "type": ["string", "number"] },
-            "memory": { "type": "string" }
+            "cpu": {
+              "type": [
+                "string",
+                "number"
+              ]
+            },
+            "memory": {
+              "type": "string"
+            }
           }
         }
       }
