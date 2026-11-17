@@ -2,8 +2,8 @@ apiVersion: v2
 name: sindri-build
 description: Meru's build namespace for one app - a Gitea runner (Sindri) that runs each job as its own pod.
 type: application
-version: 0.8.1
-appVersion: "5.2.4"
+version: 0.8.2
+appVersion: "5.3.0"
 home: https://git.clockmost.com/Meru/sindri
 sources:
   - https://git.clockmost.com/Meru/sindri
