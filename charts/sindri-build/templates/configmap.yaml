@@ -39,10 +39,11 @@ data:
               type: RuntimeDefault
           containers:
             - name: job
-              # Every job takes one of the node's `build-slot`s, whichever app it is for, so the third job at once waits
-              # as Pending. The `sindri` label below keeps this: the runner merges templates key by key.
+              # Every job pays its buildCost out of the node's build budget (RAM, disk, CPU pools: cm-jnxa), whichever app it
+              # is for, and waits as Pending until all three fit. The `sindri` label below keeps this: the runner merges
+              # templates key by key.
               resources:
-                {{- toYaml (merge (dict "limits" (dict "clockmost.com/build-slot" "1")) .Values.jobResources) | nindent 16 }}
+                {{- toYaml (merge (dict "limits" (dict "clockmost.com/build-memory" (include "sindri-build.costMemory" . | int) "clockmost.com/build-disk" (include "sindri-build.costDisk" . | int) "clockmost.com/build-cpu" (include "sindri-build.costCpu" . | int))) .Values.jobResources) | nindent 16 }}
               securityContext:
                 allowPrivilegeEscalation: false
                 capabilities:
@@ -80,6 +81,9 @@ data:
                 resources:
                   limits:
                     memory: {{ .Values.buildMemoryLimit }}
+                    {{- if .Values.buildCost.enforceDisk }}
+                    ephemeral-storage: {{ include "sindri-build.diskLimit" . }}Gi # kubelet evicts only this pod above it
+                    {{- end }}
                 securityContext:
                   allowPrivilegeEscalation: true # newuidmap/newgidmap are setuid
                   capabilities:

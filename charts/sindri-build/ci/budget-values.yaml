@@ -1,0 +1,8 @@
+# A heavy build that declared its cost (felt-llm's kind): 4 GiB RAM, 20 GiB disk (enforced), 4 cores.
+app: budget
+owner: mario
+buildCost:
+  memory: 4Gi
+  disk: 20Gi
+  cpu: "4"
+  enforceDisk: true
