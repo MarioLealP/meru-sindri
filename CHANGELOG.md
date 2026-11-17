@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## sindri-build 0.8.2
+
+### Security
+- The runner image is gitea/runner 5.3.0 (was 5.2.4), pinned by digest. 5.3.0 fixes GHSA-7c33-wq58-g35r (high: the
+  runner's cache shared entries across branches, so a branch writer could poison default-branch builds): cache entries
+  are now scoped by ref, so caches start cold once after the upgrade. Also in 5.3.0: `golang.org/x/net` bump for
+  CVE-2026-78661 and a Kubernetes job-pod copy mode (`kubernetes.transfer.mode`, off unless configured). Not 5.4.1 or
+  6.0.0 on purpose: 6.0.0 removes `builtin:checkout` and needs a workflow check first; 5.4.x adds Windows and other
+  features this chart does not need. Existing runners pick it up when each app's chart is synced.
+
 ## sindri-build 0.8.1
 
 ### Fixed
